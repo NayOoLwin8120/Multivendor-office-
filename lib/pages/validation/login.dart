@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:multi/pages/home.dart';
+import 'package:multi/pages/userdetail.dart';
 import 'package:multi/pages/validation/regiester.dart';
 
 
@@ -23,13 +24,25 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
 
   final _passwordController = TextEditingController();
+  bool _obscureText = true;
 
   final _formKey = GlobalKey<FormState>();
 
   bool _isAuthenticating = false;
+  @override
+  void dispose() {
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  void _toggleObscureText() {
+    setState(() {
+      _obscureText = !_obscureText;
+    });
+  }
 
   Future<void> _authenticate() async {
-    if (_formKey.currentState!.validate()) {
+    if (_formKey.currentState?.validate()==null) {
       setState(() {
         _isAuthenticating = true;
       });
@@ -40,7 +53,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       try {
         final response = await Dio().post(
-          'https://your-api-url.com/authenticate',
+          'http://192.168.2.111:9999/api/login',
           data: {
             'email': email,
             'password': password,
@@ -52,10 +65,12 @@ class _LoginScreenState extends State<LoginScreen> {
           final token = responseData['token'];
 
           await _storage.write(key: 'token', value: token);
+          await _storage.write(key: 'username', value: email);
+          await _storage.write(key: 'password', value: password);
 
-          Navigator.push(
+          Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => Home()),
+            MaterialPageRoute(builder: (context) => UserDetailsPage()),
           );
         } else {
           final errorMessage = response.data['message'];
@@ -63,7 +78,7 @@ class _LoginScreenState extends State<LoginScreen> {
             context: errorMessage,
             builder: (context) => AlertDialog(
               title: Text('Error'),
-              content: Text(errorMessage),
+              content: Text(errorMessage.toString()),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
@@ -76,6 +91,7 @@ class _LoginScreenState extends State<LoginScreen> {
       } catch (error) {
 
         showDialog(
+          context: context,
           builder: (context) => AlertDialog(
             title: Text('Error'),
             content: Text(error.toString()),
@@ -86,7 +102,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ],
           ),
-          context:context,
+
         );
       }
 
@@ -178,9 +194,15 @@ class _LoginScreenState extends State<LoginScreen> {
                   const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: TextFormField(
                     controller: _passwordController,
-                    obscureText: true,
+                    obscureText: _obscureText,
                     decoration:  InputDecoration(
                       prefixIcon: Icon(Icons.key),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscureText ? Icons.visibility_off : Icons.visibility,color:Colors.black,
+                        ),
+                        onPressed: _toggleObscureText,
+                      ),
                       border:OutlineInputBorder(borderRadius:BorderRadius.circular(12)),
                       hintText: "Enter Your Password",
                       labelText: "password ",
@@ -194,57 +216,22 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(
                   height: 16,
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: ElevatedButton(
 
-                    onPressed: _isAuthenticating ? null : _authenticate,
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: ElevatedButton(
+                    onPressed: _authenticate,
                     child: _isAuthenticating
-                        ? CircularProgressIndicator()
+                        ? SizedBox(
+                      height: 20.0,
+                      width: 20.0,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                      ),
+                    )
                         : Text('Login'),
                   ),
                 ),
-                // Padding(
-                //   padding: const EdgeInsets.symmetric(horizontal: 16),
-                //   child: ElevatedButton(
-                //       onPressed: () async {
-                //         debugPrint("Login Successfuly");
-                //         // if (_key.currentState!.validate()) {
-                //         //   await userController
-                //         //       .login(
-                //         //       phone: phoneController.text,
-                //         //       password: passwordController.text)
-                //         //       .then((response) => {
-                //         //     if (response.message == "Login Sucessfull")
-                //         //       {
-                //         //         Navigator.push(
-                //         //             context,
-                //         //             MaterialPageRoute(
-                //         //               builder: (context) =>
-                //         //                   WelcomePage(),
-                //         //             ))
-                //         //       }
-                //         //     else
-                //         //       {showAlertDialog(context, "Login Failed")}
-                //         //   });
-                //         // } else {
-                //         //   print("Form validation failed");
-                //         // }
-                //       },
-                //       child: Padding(
-                //         padding: const EdgeInsets.all(8.0),
-                //         child: Row(
-                //           mainAxisAlignment: MainAxisAlignment.center,
-                //           children: const [
-                //             Icon(Icons.login),
-                //             SizedBox(
-                //               width: 16,
-                //             ),
-                //             Text("L O G I N ")
-                //           ],
-                //         ),
-                //       )),
-                // ),
                 const SizedBox(
                   height: 20,
                 ),

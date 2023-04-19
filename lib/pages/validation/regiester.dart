@@ -19,8 +19,11 @@ class SignupPage extends StatefulWidget {
 class _SignupPageState extends State<SignupPage> {
   final _key = GlobalKey<FormState>();
   final _storage = FlutterSecureStorage();
+  bool _obscureText = true;
+  bool _obscureText2 = true;
 
   TextEditingController emailController = TextEditingController();
+  TextEditingController nameController = TextEditingController();
 
   TextEditingController passwordController = TextEditingController();
 
@@ -29,13 +32,34 @@ class _SignupPageState extends State<SignupPage> {
   TextEditingController usernamecontroller = TextEditingController();
 
   bool _isRegistering = false;
+  void dispose() {
+    passwordController.dispose();
+    super.dispose();
+  }
+
+  void _toggleObscureText() {
+    setState(() {
+      _obscureText = !_obscureText;
+
+    });
+  }
+  void _toggleObscureText2() {
+    setState(() {
+      _obscureText2 = !_obscureText2;
+
+    });
+  }
+
   Future<void> _register() async {
+
     if (_key.currentState!.validate()) {
       setState(() {
         _isRegistering = true;
       });
 
-      final name = usernamecontroller.text.trim();
+
+      final username = usernamecontroller.text.trim();
+      final name = nameController.text.trim();
       final email = emailController.text.trim();
       final password = passwordController.text.trim();
       final confirmpassword = confirmpasswordController.text.trim();
@@ -50,19 +74,28 @@ class _SignupPageState extends State<SignupPage> {
 
       try {
         final response = await Dio().post(
-          'https://your-api-url.com/register',
+          'http://192.168.2.111:9999/api/register',
           data: {
             'name': name,
-            'email': email,
+            'username':username,
             'password': password,
+            'confirm password':confirmpassword,
+            'email': email,
           },
         );
+        print(response.statusCode);
+        if(response.statusCode==200){
+          print("Ok");
+        }else{
+          print("Don't");
+        }
+
 
         if (response.statusCode == 200) {
-          final responseData = json.decode(response.data);
-          final token = responseData['token'];
-
-          await _storage.write(key: 'token', value: token);
+          // final responseData = json.decode(response.data);
+          // final token = responseData['token'];
+          //
+          // await _storage.write(key: 'token', value: token);
 
           Navigator.pushReplacement(
             context,
@@ -71,14 +104,14 @@ class _SignupPageState extends State<SignupPage> {
         } else {
           final errorMessage = response.data['message'];
           showDialog(
-            context: context,
+            context:context,
             builder: (context) => AlertDialog(
               title: Text('Error'),
               content: Text(errorMessage),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: Text('OK'),
+                  child: Text('Ok'),
                 ),
               ],
             ),
@@ -89,7 +122,17 @@ class _SignupPageState extends State<SignupPage> {
           context: context,
           builder: (context) => AlertDialog(
             title: Text('Error'),
-            content: Text(error.toString()),
+            // content: Text(error.toString()),
+             content:SingleChildScrollView(
+              child: ListBody(
+                children: const <Widget>[
+                  Text('Connection Error'),
+                ],
+              ),
+             ),
+            shape: RoundedRectangleBorder(
+                borderRadius:
+                BorderRadius.circular(20.0)),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
@@ -121,7 +164,7 @@ class _SignupPageState extends State<SignupPage> {
           //  mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const SizedBox(
-              height: 32,
+              height: 20,
             ),
             const Text(
               "Multivendor",
@@ -131,30 +174,30 @@ class _SignupPageState extends State<SignupPage> {
                   fontStyle: FontStyle.italic),
             ),
             const SizedBox(
-              height: 32,
+              height: 20,
             ),
             const Text(
               "Welcome !",
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.w500),
             ),
             const SizedBox(
-              height: 32,
+              height: 20,
             ),
             const Text("Regiester For Your Account",
                 style: TextStyle(fontSize: 19, fontWeight: FontWeight.w500)
             ),
             const SizedBox(
-              height: 16,
+              height: 10,
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 1),
               child: TextFormField(
-                controller: usernamecontroller,
+                controller: nameController,
                 decoration:  InputDecoration(
                   prefixIcon:Icon(Icons.person),
                   border:OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   hintText: "Enter Your name",
-                  label: Text("User Name"),
+                  label: Text("Name"),
 
                 ),
                 validator: (value) {
@@ -166,11 +209,33 @@ class _SignupPageState extends State<SignupPage> {
               ),
             ),
             const SizedBox(
-              height: 16,
+              height: 10,
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 1),
+              child: TextFormField(
+                controller: usernamecontroller,
+                decoration:  InputDecoration(
+                  prefixIcon:Icon(Icons.person),
+                  border:OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  hintText: "Enter Your username",
+                  label: Text("User Name"),
+
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your username';
+                  }
+                  return null;
+                },
+              ),
+            ),
+            const SizedBox(
+              height: 10,
             ),
 
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 1),
               child: TextFormField(
                 controller: emailController,
                 decoration:  InputDecoration(
@@ -186,6 +251,9 @@ class _SignupPageState extends State<SignupPage> {
                   if (value!.isEmpty) {
                     return 'Please enter your email';
                   }
+                  if (!value.contains('@')) {
+                    return 'Please contains @ for email';
+                  }
                   if (!RegExp(r'\S+@\S+\.\S+').hasMatch(value)) {
                     return 'Please enter a valid email address';
                   }
@@ -194,14 +262,21 @@ class _SignupPageState extends State<SignupPage> {
               ),
             ),
             const SizedBox(
-              height: 16,
+              height: 10,
             ),
 
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 1),
               child: TextFormField(
                 controller: passwordController,
+                keyboardType: TextInputType.number,
                 decoration:  InputDecoration(
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscureText ? Icons.visibility_off : Icons.visibility,
+                    ),
+                    onPressed:_toggleObscureText,
+                  ),
                   prefixIcon:Icon(Icons.key),
                   border:OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   hintText: "Enter Your Password",
@@ -217,13 +292,19 @@ class _SignupPageState extends State<SignupPage> {
               ),
             ),
             const SizedBox(
-              height: 16,
+              height: 10,
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 1),
               child: TextFormField(
                   controller: confirmpasswordController,
                   decoration:  InputDecoration(
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscureText2 ? Icons.visibility_off : Icons.visibility,
+                      ),
+                      onPressed:_toggleObscureText2,
+                    ),
                     prefixIcon:Icon(Icons.key),
                     border:OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     hintText: "Enter Your Confirm Password",
@@ -236,51 +317,21 @@ class _SignupPageState extends State<SignupPage> {
                       return "Password and Confrim password is not same";
                   }),
             ),
-            SizedBox(height: 16,),
+            SizedBox(height: 10),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: ElevatedButton(
-                  onPressed: () async {
-                    debugPrint("Regiestester Successfully");
-                    // if (_key.currentState!.validate()) {
-                    //   await userController
-                    //       .createAccout(
-                    //       email: emailController.text,
-                    //       username: usernamecontroller.text,
-                    //       password: passwordController.text)
-                    //       .then((response) => {
-                    //     if (response.message ==
-                    //         "Account created successful")
-                    //       {
-                    //         showAlertDialog(
-                    //             context, "Account created successful")
-                    //       }
-                    //     else
-                    //       {
-                    //         {
-                    //           showAlertDialog(
-                    //               context, 'Failed to create account')
-                    //         }
-                    //       }
-                    //   });
-                    // } else {
-                    //   print("Form validation failed");
-                    // }
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
-
-                        SizedBox(
-                          width: 8,
-                          height: 10,
-                        ),
-                        Text("Create Account",style: TextStyle(fontSize: 18,),)
-                      ],
-                    ),
-                  )),
+                onPressed:_register,
+                child: _isRegistering
+                    ? SizedBox(
+                  height: 20.0,
+                  width: 20.0,
+                  child: CircularProgressIndicator(
+                    color: Colors.white,
+                  ),
+                )
+                    : Text('Create Account'),
+              ),
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
