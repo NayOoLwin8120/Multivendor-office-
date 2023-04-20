@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:multi/pages/home.dart';
 import 'package:multi/pages/validation/login.dart';
 
 class UserDetailsPage extends StatefulWidget {
@@ -35,9 +36,8 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
     // Navigate back to login page
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(
-        builder: (context) =>LoginScreen() ,
-      ),
+      MaterialPageRoute(builder: (context) => Home()),
+
     );
   }
 

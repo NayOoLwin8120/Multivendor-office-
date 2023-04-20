@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:multi/components/carousel/categoryslider.dart';
+import 'package:multi/components/carousel/slider.dart';
+import 'package:multi/components/searchbar.dart';
 import 'package:multi/pages/validation/login.dart';
 
 class Home extends StatefulWidget {
@@ -13,6 +16,7 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar:AppBar(
+        elevation: 0,
         title:Text("Multivendor"),
         actions: <Widget>[
         TextButton(
@@ -28,6 +32,19 @@ class _HomeState extends State<Home> {
       ),
       ],
       ),
+      body:Column(children: [
+        //for Searing and header
+         Searching(),
+
+        SizedBox(height: 10,),
+        //for Slider Image
+        Sliderimage(),
+        SizedBox(height: 10,),
+        // for Category Slider
+
+        Categoryslider(),
+      ],)
+      ,
     );
   }
 }

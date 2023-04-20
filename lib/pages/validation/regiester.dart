@@ -99,7 +99,7 @@ class _SignupPageState extends State<SignupPage> {
 
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => Home()),
+            MaterialPageRoute(builder: (context) => LoginScreen()),
           );
         } else {
           final errorMessage = response.data['message'];
@@ -153,6 +153,7 @@ class _SignupPageState extends State<SignupPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+
       resizeToAvoidBottomInset:false ,
       appBar: AppBar(
         backgroundColor: Colors.white,
