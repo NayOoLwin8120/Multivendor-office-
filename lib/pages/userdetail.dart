@@ -29,14 +29,43 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
     });
   }
   void _logout() async {
-    // Clear user details from secure storage
-    await _storage.delete(key: 'username');
-    await _storage.delete(key: 'password');
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
 
-    // Navigate back to login page
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => Home()),
+        return AlertDialog(
+          shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(40))),
+          title: Text('Are You Sure To Logout !'),
+          // content: Text('Welcome to MultiOnline Shop'),
+          actions: [
+            TextButton(
+
+              child: Text('Cancel' ,style: TextStyle(color: Colors.green),),
+              onPressed: () => Navigator.pop(context, 'Cancel'),
+
+            ),
+            TextButton(
+
+              child: Text('OK' ,style: TextStyle(color: Colors.red),),
+              onPressed: () async{
+                await _storage.delete(key: 'username');
+                await _storage.delete(key: 'password');
+                Navigator.pop(context);
+
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => Home()),
+
+                );
+              },
+            ),
+          ],
+        );
+      },
+
+
+
 
     );
   }
