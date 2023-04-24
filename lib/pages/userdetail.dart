@@ -55,7 +55,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
 
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (context) => Home()),
+                  MaterialPageRoute(builder: (context) => Home(isAuthenticating: true)),
 
                 );
               },

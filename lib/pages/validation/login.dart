@@ -93,11 +93,12 @@ class _LoginScreenState extends State<LoginScreen> {
             },
           );
           Future.delayed(Duration(seconds: 3), () {
+            Navigator.pop(context);
             // Navigate to home page and remove all previous routes
             Navigator.pushReplacement(
                         context,
                         // MaterialPageRoute(builder: (context) => UserDetailsPage()),
-                        MaterialPageRoute(builder: (context) => Home()),
+                        MaterialPageRoute(builder: (context) => Home(isAuthenticating: _isAuthenticating)),
                       );
           });
 
